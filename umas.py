@@ -43,7 +43,7 @@ CRC32=""
 bytes_to_read=[64,264, 64, 1014, 998, 1008, 1014]
 
 memory_block_sizes=[0,23296,16128,16128,16128,16128,16128,16128,16128,16128,0,0,0,0,0,0,0,2047,22272,65535]
-
+trans_creciente=True
 
 #########################################################################################
 ####################      UMAS PROTOCOL FUNCTIONS     ###################################
@@ -56,7 +56,11 @@ def send_command(comando):
 	global t
 	global trans
 
-	trans+=1
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
+
 	trans_str=InttoHex(trans)
 
 #	write_screen("Enviando comando:"+comando+"...")
@@ -505,7 +509,10 @@ def repeat(text):
 	global t
 	global trans
 
-	trans+=1
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
 
 	longitud=hex(len(text)+5).replace('0x', '')
         if len(longitud) == 1:
@@ -574,7 +581,11 @@ def memory_dump(section_str, Filename=None):
 		set_verb(True)
 
 	while (Continue):
-		trans+=1
+		if trans_creciente:
+			trans+=1
+		else:
+			trans=1
+
 		#data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+length_str
 		#data=data.split(" ")
 		#d = ''.join(data).decode('hex')
@@ -643,7 +654,11 @@ def read_sections13_14():
 	length_str="64 00" #little-endian
 	starting_str="00 00"
 
-	trans+=1
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
+
 	data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+length_str
 	data=data.split(" ")
 	d = ''.join(data).decode('hex')
@@ -657,7 +672,12 @@ def read_sections13_14():
 
 	starting_str=length_str
 	length_str="9C 00"
-	trans+=1
+
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
+
 	data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+length_str
 	data=data.split(" ")
 	d = ''.join(data).decode('hex')
@@ -674,7 +694,11 @@ def read_sections13_14():
 	length_str="64 00" #little-endian
 	starting_str="00 00"
 
-	trans+=1
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
+
 	data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+length_str
 	data=data.split(" ")
 	d = ''.join(data).decode('hex')
@@ -694,7 +718,11 @@ def read_sections13_14():
 	length=HextoInt(length_str,"LITTLE-ENDIAN")
 
 	while (starting+length < 1604):
-		trans+=1
+		if trans_creciente:
+			trans+=1
+		else:
+			trans=1
+
 		data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+length_str
 		data=data.split(" ")
 		d = ''.join(data).decode('hex')
@@ -710,7 +738,12 @@ def read_sections13_14():
 		starting_str=InttoHex(starting, "LITTLE-ENDIAN")
 
 	length_left=1604-starting
-	trans+=1
+
+	if trans_creciente:
+		trans+=1
+	else:
+		trans=1
+
 	data=""+InttoHex(trans)+" 00 00 00 0D 00 5a "+code+" 00 "+section+" "+starting_str+" 00 00 "+InttoHex(length_left, "LITTLE-ENDIAN")
 	data=data.split(" ")
 	d = ''.join(data).decode('hex')
@@ -736,16 +769,25 @@ def get_internal_card_info():
 def initialize(IP_DST):
 	write_screen("\nModifying iptables..")
 	create_iptables_rule("502")
-	write_screen("\nInitializing connection..")
+	write_screen("\nInitializong connection..")
 	tcp_negotiation(IP_DST);
+
+	#0x02
 	pckt=device_information();
 	dot()
-
-	time.sleep(1)
+	time.sleep(0.6)
 	dot()
 
+	#0x01
 	init();
+
+	#0x0A
 	repeat("T"*(blocksize+4));
+
+	#0x03
+	#0x0304
+	#0x0304
+	#0x04
 	send_command("00 03 00")
 	time.sleep(0.3)
 	send_command("00 03 04")
@@ -754,7 +796,10 @@ def initialize(IP_DST):
 	time.sleep(0.3)
 	send_command("00 04")
 	time.sleep(0.3)
+
+	#0x01
 	init()
+
 	a=""
 	dot()
 	for i in range (1,blocksize+4):
@@ -764,13 +809,16 @@ def initialize(IP_DST):
 		a=a+b[-2:]+" "
 
 	dot()
-	send_command("00 0A 00 "+a)
 	
-	send_command("00 04")
+	#0x0A
+	send_command("00 0A 00 "+a)
 	time.sleep(0.3)
-	send_command("00 04")
-	time.sleep(0.3)
-	dot()
+	
+#	send_command("00 04")
+#	time.sleep(0.3)
+#	send_command("00 04")
+#	time.sleep(0.3)
+#	dot()
 
 ##########################################
 # Download Strategy

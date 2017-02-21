@@ -175,7 +175,8 @@ def kill_plc():
 #	time.sleep(0.6)
 #	reset_connection()
 
-	send_command("00 20 00 02 00 50 3F 00 00 "+get_blocksize_str())
+	#send_command("00 20 00 02 00 50 3F 00 00 "+get_blocksize_str())
+	send_command("00 20 00 02 00 50 9F 00 00 "+get_blocksize_str())
 
 ##########################################
 # Extract Network Information

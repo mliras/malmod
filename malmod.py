@@ -537,11 +537,6 @@ elif (ACTION=="GET-SYSTEM-TIME"):
 		initialize(IP_DST)
 		read_sections13_14()
 		send_id()
-
-elif (ACTION=="GET-SYSTEM-TIME"):
-		initialize(IP_DST)
-		read_sections13_14()
-		send_id()
 		was_running=True
 		if not (is_running()):
 			was_running=False
@@ -549,13 +544,19 @@ elif (ACTION=="GET-SYSTEM-TIME"):
 		time.sleep(1)
 
 		year=get_systemword(53)
+		real_year=(year%16) + 10*((year/16)%16) + 100*((year/256)%16) + 1000*(year/4096)
 		monthday=get_systemword(52)
-		print("\nPLC Date (dd/mm/yyyy): %02d/%02d/%4d" % (monthday%256,monthday//256,year))
-
+		real_month=10*(monthday//4096)+((monthday//256)%16)
+		real_day=(monthday%16)+10*((monthday/16)%16)
+		
+		print("\nPLC Date (dd/mm/yyyy): %02d/%02d/%4d" % (real_day,real_month,real_year))
 
 		hourmin=get_systemword(51)
 		sec=get_systemword(50)
-		print("\nPLC Time (hh:mm:ss): %02d:%02d:%02d" % (hourmin//256, hourmin%256, sec))
+		real_sec= 10*(sec/4096)+((sec/256)%16)
+		real_min=hourmin%16+ 10*((hourmin/16)%16)
+		real_hour=(hourmin//256)%16 + 10 * (hourmin//4096)
+		print("\nPLC Time (hh:mm:ss): %02d:%02d:%02d" % (real_hour, real_min, real_sec))
 
 		if not was_running:
 			stop_plc()
@@ -581,8 +582,12 @@ elif (ACTION=="SET-DATE"):
 		time.sleep(1)
 
 		set_systembit(50,True)
-		set_systemword(53,date_plc.year)
-		set_systemword(52,date_plc.month*256+date_plc.day)
+		plc_year=(date_plc.year/1000)*4096 + ((date_plc.year/100)%10)*256 + ((date_plc.year/10)%10)*16 + date_plc.year%10
+		plc_month=(date_plc.month/10)*4096 + (date_plc.month%10)*256
+		plc_day=(date_plc.day/10)*16 + date_plc.day%10
+
+		set_systemword(53,plc_year)
+		set_systemword(52,plc_month+plc_day)
 		set_systembit(50,False)
 
 		if not was_running:
@@ -610,8 +615,13 @@ elif (ACTION=="SET-TIME"):
 		time.sleep(1)
 
 		set_systembit(50,True)
-		set_systemword(50,date_plc.second)
-		set_systemword(51,256*date_plc.hour+date_plc.minute)
+
+		plc_sec=(date_plc.second/10)*4096 + (date_plc.second%10)*256
+		plc_min=(date_plc.minute/10)*16 + date_plc.minute%10
+		plc_hour=(date_plc.hour/10)*4096 + (date_plc.hour%10)*256
+
+		set_systemword(50,plc_sec)
+		set_systemword(51,plc_hour+plc_min)
 		set_systembit(50,False)
 
 		if not was_running:
