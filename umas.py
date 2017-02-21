@@ -8,7 +8,7 @@ import getopt
 import os
 import logging
 import iptc
-import subprocess
+import subprocess 
 from aux import *
 from ftplib import FTP
 from pymodbus.client.sync import ModbusTcpClient as ModbusClient
