@@ -1,0 +1,66 @@
+This scripts are a group of functions that try different "attacks" against del Modicon M340 PLC. Among the attacks that can be tried are:
+
+- Try default FTP passwords
+- Write blocks of rubbish in the PLCs memory
+- Obtain information of any kind
+	- Get all system bits
+	- Get all system words
+	- Monitor all system bits
+	- Extract general PLC information
+	- Extract network information
+	- Extract zlib blobs from snmp
+- Store file in holding registers
+- Recover file from holding registers
+- stop PLC remotely
+- delete backup strategy
+
+Other additional non-malicious functions:
+- Upload strategy
+- Download strategy
+- Get Card Information
+- Check if PLC is running
+- start PLC
+- Set Date
+- Set Time
+- Get Time
+
+
+This script are confirmed by the following files:
+
+	- malmod.py : Starting point. Will launch a screen menu based on CURSES that will allow do different operations against a PLC. The script can also be run without CURSES menu. The script options are:
+
+		usage: malmod.py [-h] [-v|-w] -m <PLC IP> [-u <File to Upload>|-d <File to Download>|-i|-c|-a|-b|-x|-y|-k|-l|-L|-f|-n]
+				-h: this help text
+				-m <IP>: PLC IP address
+		MODIFIERS:
+				-v | --verbose: verbose output
+				-w | --very-verbose: very verbose output
+		ACTIONS:
+				--upload-strategy | -u <PATH>: ATX file to upload
+				--download-strategy | -d <PATH>: Path to ATX file to download strategy in
+				--get-info | -i: Get Device Information
+				-s: Get Card Information
+				--store-file | -a <FILE>: Store File in Holding registers
+				--retrieve-file | -b <FILE>: Retrieve File in Holding registers
+				--command-file | -c <FILE>: Command File (Only in listener mode)
+				--listener-mode | -l: Listener Mode
+				--ncurses | -n: use curses interface
+				--restore-backup | -R: Restore strategy from backup
+				--delete-backup | -D: Delete backup of strategy from card
+				--backup | -B: Backup styrategy into card
+				--start | -y: Start PLC
+				-x: Check if PLC is Running (with -v)
+				--stop | -z: Stop PLC
+				--kill-plc | -k: Stop PLC
+				-f: Try default FTP passwords
+				--set-date=<DD/MM/YYYY>
+				--set-time=<HH:MM:SS>
+				--get-time: return time of PLC
+
+	- umas.py : Includes a pseudo-library for interacting with the Modicon M-340 using the UMAS library
+
+	- mal_functions.py: Includes a set of malicious functions that can be used against a Modicon M340 PLC
+
+	- modbus.py: Very bad chosen name for a set of auxiliary functions used by the rest of scripts to work. This file include functions like ione that opens and maintain it open a port the PLC can interact with, among others
+
+	- cliente_modbus.py: Python script for doing normal modbus requests against the modicon PLC. This does not use UMAS
